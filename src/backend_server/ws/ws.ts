@@ -73,7 +73,7 @@ const incomingClientMessageHandler = (
       break;
     }
     case 'create_room': {
-      createRoomsHandler();
+      createRoomsHandler(wsKey);
       break;
     }
     case 'add_user_to_room': {

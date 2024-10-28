@@ -4,8 +4,12 @@ import {rooms} from '../store/rooms';
 import {users} from '../store/users';
 import {getResponseMessage} from '../shared/utils/response-message';
 
-export const createRoomsHandler = (): void => {
-  rooms.getRoom();
+export const createRoomsHandler = (wsKey: string): void => {
+  const room = rooms.getRoom();
+  const user = users.getUserByCurrentSessionId(wsKey);
+  if (user == null || room == null || room.roomUsers.find(u => u.index === user.index) != null)
+    return;
+  rooms.addUserToRoom(room.roomId, user.name, user.index);
   updateRooms();
 };
 
