@@ -11,6 +11,7 @@ export const addShipsHandler = (incomingClientMessage: IncomingClientMessage): v
   const player: PlayerModel = {
     playerId: indexPlayer,
     ships,
+    shipsStatus: [],
   };
 
   games.addPlayerToGame(gameId, player);

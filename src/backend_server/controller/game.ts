@@ -1,8 +1,13 @@
 import {wsClients} from '../store/ws-clients';
-import {games} from '../store/games';
+import {type Games, games} from '../store/games';
 import {getResponseMessage} from '../shared/utils/response-message';
 import {users} from '../store/users';
-import {type Position, type IncomingClientMessage, type AttackData} from '../shared/models';
+import {
+  type Position,
+  type IncomingClientMessage,
+  type AttackData,
+  type PlayerModel,
+} from '../shared/models';
 import {winners} from '../store/winners';
 import {updateWinners} from './winners-handler';
 
@@ -22,7 +27,32 @@ export const gameTurn = (gameId: string | number, indexPlayer: string | number):
   });
 };
 
-export const gameAttackResult = (
+const getCurrentGamePlayers = (
+  currentGames: Games,
+  gameId: string | number,
+): PlayerModel[] | undefined => {
+  return currentGames.getGames().find(game => game.gameId === gameId)?.players;
+};
+
+const isPlayerShipsAlive = (player: PlayerModel): boolean => {
+  return player.shipsStatus.filter(ship => ship.status === 'alive').length > 0;
+};
+
+const getWinnerPlayer = (
+  currentGames: Games,
+  gameId: string | number,
+): string | number | undefined => {
+  const players = getCurrentGamePlayers(currentGames, gameId);
+  const losePlayer = players?.find(player => !isPlayerShipsAlive(player));
+  if (losePlayer == null) return undefined;
+  const winnerPlayer = players?.find(player => player.playerId !== losePlayer?.playerId);
+  if (winnerPlayer != null) {
+    return winnerPlayer.playerId;
+  }
+  return undefined;
+};
+
+const gameAttackResult = (
   gameId: string | number,
   indexPlayer: string | number,
   position: Position,
@@ -57,7 +87,7 @@ export const attackHandler = (incomingClientMessage: IncomingClientMessage): voi
   if (game == null || game.currentPlayerIndex !== playerId) return;
   const enemyPlayer = game.players.find(item => item.playerId !== playerId);
   if (enemyPlayer == null) return;
-  const statusAttack = enemyPlayer.shipsStatus?.find(item =>
+  const statusAttack = enemyPlayer.shipsStatus.find(item =>
     item.positions.find(p => p.x === positionAtack.x && p.y === positionAtack.y),
   );
   if (statusAttack == null) {
@@ -68,6 +98,11 @@ export const attackHandler = (incomingClientMessage: IncomingClientMessage): voi
     if (status != null) {
       gameAttackResult(game.gameId, playerId, positionAtack, status);
       gameTurn(game.gameId, playerId);
+    }
+    const winnerPlayer = getWinnerPlayer(games, game.gameId);
+    if (winnerPlayer != null) {
+      console.log(`Finish game ${game.gameId}! Winner player ${winnerPlayer}`);
+      finishGame(winnerPlayer);
     }
   }
 };

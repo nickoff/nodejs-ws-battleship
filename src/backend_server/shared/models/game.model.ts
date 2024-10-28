@@ -7,7 +7,7 @@ export interface GameModel {
 export interface PlayerModel {
   playerId: string | number;
   ships: ShipModel[];
-  shipsStatus?: ShipStatus[];
+  shipsStatus: ShipStatus[];
 }
 export interface ShipStatus {
   id: string;

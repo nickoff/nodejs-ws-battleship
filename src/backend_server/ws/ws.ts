@@ -63,7 +63,9 @@ const incomingClientMessageHandler = (
   wsKey: string,
   incomingClientMessage: IncomingClientMessage,
 ): void => {
-  console.log(incomingClientMessage.type);
+  console.log(
+    `Incomming type message from client with key:${wsKey}: ${incomingClientMessage.type}`,
+  );
 
   switch (incomingClientMessage.type) {
     case 'reg': {
